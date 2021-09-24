@@ -1,10 +1,5 @@
 import datetime
-
-def get_start_time():
-    return datetime.datetime.now()
-def get_end_time(start_time):
-    delta = datetime.datetime.now() - start_time
-    return delta.total_seconds() * 1000
+import util
 
 """
 Sieve method to generate the prime numbers 
@@ -35,23 +30,17 @@ def print_prime_numbers(number):
             numbers.append(i)
             print (i, end=', ')
         
-start_time = get_start_time()
-
+start_time = util.get_start_time()
 print_prime_numbers(100)
+util.print_end_time(start_time)
 
-print("%s milliseconds" % get_end_time(start_time))
-
-start_time = get_start_time()
-
+start_time = util.get_start_time()
 print_prime_numbers(500)
+util.print_end_time(start_time)
 
-print("%s milliseconds" % get_end_time(start_time))
-
-start_time = get_start_time()
-
+start_time = util.get_start_time()
 print_prime_numbers(1000)
-
-print("%s milliseconds" % get_end_time(start_time))
+util.print_end_time(start_time)
 
 '''
     100 - 0.367 milliseconds
