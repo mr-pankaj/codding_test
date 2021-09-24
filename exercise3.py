@@ -9,24 +9,25 @@ a_10 = random.sample(range(1, 11), 10)
 a_100 = random.sample(range(1, 1000), 100)
 a_1000 = random.sample(range(1, 10000), 1000)
 
-def create_slices(A, N): 
-    
+
+def create_slices(A, N):
+
     slices = []
 
-    for i_idx, i  in enumerate(A):
+    for i_idx, i in enumerate(A):
         total = i
         slice = [i]
 
         # If the number is equal to N then we found the slice and index
-        if total == N: 
+        if total == N:
             slices.append(slice)
             continue
 
-        for j_idx, j in enumerate(A):    
+        for j_idx, j in enumerate(A):
             '''
             '' Skill all previouse elements
             '''
-            if j_idx <= i_idx: 
+            if j_idx <= i_idx:
                 continue
 
             total = total + j
@@ -51,7 +52,8 @@ def create_slices(A, N):
                 slices.append(slice)
 
     return slices
-    
+
+
 start_time = util.get_start_time()
 print(create_slices(a_10, 7))
 util.print_end_time(start_time)
@@ -75,6 +77,3 @@ Output
 [[250]]
 97.22200000000001 milliseconds
 '''
-
-
-    

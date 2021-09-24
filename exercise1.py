@@ -5,6 +5,8 @@ import util
 Sieve method to generate the prime numbers 
 Reference https://en.wikipedia.org/wiki/Sieve_of_Eratosthenes
 """
+
+
 def sieve(numbers, n):
     i = 2
     while i*i <= n:
@@ -18,6 +20,7 @@ def sieve(numbers, n):
         i += 1
     return numbers
 
+
 def print_prime_numbers(number):
     numbers = []
     n = number
@@ -28,8 +31,9 @@ def print_prime_numbers(number):
     for i in range(1, n):
         if numbers[i] == 1:
             numbers.append(i)
-            print (i, end=', ')
-        
+            print(i, end=', ')
+
+
 start_time = util.get_start_time()
 print_prime_numbers(100)
 util.print_end_time(start_time)
