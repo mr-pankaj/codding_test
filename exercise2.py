@@ -1,127 +1,84 @@
 from datetime import datetime
-import time
-import os
 import pytz
 
 
 class TimeInterval:
+    
     start_time = None
     end_time = None
+    start_time_utc = None
+    end_time_utc = None
+    tz = None
+
     def __init__(self, start_time, end_time, tz) -> None:
-        self.start_time = start_time
-        self.end_time = start_time
+        self.tz = pytz.timezone(tz)
+        self.start_time = self.__make_time(start_time)
+        self.end_time = self.__make_time(end_time)
+        self.start_time_utc = self.__make_time(start_time, pytz.utc)
+        self.end_time_utc = self.__make_time(end_time, pytz.utc)
+
+    def __make_time(self, time, tz = None):
+        time = datetime.strptime(f"{datetime.now().strftime('%Y-%m-%d')} {time}", '%Y-%m-%d %I:%M %p')
+        if not tz:
+            time = self.tz.localize(time)
+        else: 
+            time = tz.localize(time)
+        return time
 
 class TimeIntersection:
 
-    def intersection(self):
-        #Temporary date for timezone and time comparision
-        tmp_date = '2021-09-24' 
-        date_formate = '%Y-%m-%d %I:%M:%S %p %Z%z'
-        time_formate = '%I:%M:%S %p %Z%z'
-        time_formate = '%I:%M:%S %p'
-        canada_tz = pytz.timezone('Canada/Central')
-        india_tz = pytz.timezone('Asia/Kolkata')
-        london_tz = pytz.timezone('Europe/London')
-        pacific_tz = pytz.timezone('US/Pacific')
+    def get_time_intersection(self, interval_one, interval_two):
         
-
-        # second_datetime = datetime.now(pacific_tz)
-
-        # print("UTC Time", datetime.now(pytz.utc).strftime(date_formate))
-        # print("Indian Time", datetime.now(india_tz).strftime(date_formate))
-        # print("London Time", first_datetime.strftime(date_formate))
-        # print("Pacific Time", second_datetime.strftime(date_formate))
-
-        # print(dir(datetime.time))
-
-        first_start_time = datetime.strptime('2021-09-24 2:30 AM', '%Y-%m-%d %I:%M %p') 
-        first_start_time = india_tz.localize(first_start_time)
-
-        first_end_time = datetime.strptime('2021-09-25 08:30 AM', '%Y-%m-%d %I:%M %p')  
-        first_end_time = india_tz.localize(first_end_time)
-
-        second_start_time = datetime.strptime('2021-09-24 10:30 AM', '%Y-%m-%d %I:%M %p') 
-        second_start_time = canada_tz.localize(second_start_time)
-
-        second_end_time = datetime.strptime('2021-09-24 05:30 PM', '%Y-%m-%d %I:%M %p')  
-        second_end_time = canada_tz.localize(second_end_time)
-
-        first_start_time_utc = first_start_time.astimezone(pytz.utc)
-        first_end_time_utc = first_end_time.astimezone(pytz.utc)
-
-        second_start_time_utc = second_start_time.astimezone(pytz.utc)
-        second_end_time_utc = second_end_time.astimezone(pytz.utc)
-
-        print("UTC Time Start", first_start_time_utc)
-        print("UTC Time End", first_end_time_utc)
-
-        print('======================')
-
-        # print("Pacific Time", second_start_time)
-        print("UTC Time", second_start_time_utc)
-        print("UTC Time End", second_end_time_utc)
-
-            
-        first_slot = {
-            "start_time": first_start_time,
-            "start_time_utc": first_start_time_utc,
-            "end_time": first_end_time,
-            "end_time_utc": first_end_time_utc
-        }
-
-        second_slot = {
-            "start_time": second_start_time,
-            "start_time_utc": second_start_time_utc,
-            "end_time": second_end_time,
-            "end_time_utc": second_end_time_utc
-        }
-
         intersecting_points = []
-
         intersection_time = {}
 
-        if (second_slot['start_time_utc'] >= first_slot['start_time_utc']) and (second_slot['start_time_utc'] <= first_slot['end_time_utc']):
+        if (interval_one.start_time_utc >= interval_one.start_time_utc) and (interval_two.start_time_utc <= interval_one.end_time_utc):
             intersecting_points.append('start_time')
-        if (second_slot['end_time_utc'] >= first_slot['start_time_utc']) and (second_slot['end_time_utc'] <= first_slot['end_time_utc']):
+        if (interval_two.end_time_utc >= interval_one.start_time_utc) and (interval_two.end_time_utc <= interval_one.end_time_utc):
             intersecting_points.append('end_time')
 
         # When start is intersecting
         if 'start_time' in intersecting_points and not 'end_time' in intersecting_points:
-            intersection_time['start_time_utc'] = second_slot['start_time_utc']
-            intersection_time['end_time_utc'] = first_slot['end_time_utc']
+            intersection_time['start_time_utc'] = interval_two.start_time_utc
+            intersection_time['end_time_utc'] = interval_one.end_time_utc
 
         # When end time is intersecting
         if 'end_time' in intersecting_points and not 'start_time' in intersecting_points:
-            intersection_time['start_time_utc'] = first_slot['start_time_utc']
-            intersection_time['end_time_utc'] = second_slot['end_time_utc']
+            intersection_time['start_time_utc'] = interval_one.start_time_utc
+            intersection_time['end_time_utc'] = interval_two.end_time_utc
 
         # When start and end both lies in side the first slot
         if 'start_time' in intersecting_points and 'end_time' in intersecting_points:
-            intersection_time['start_time_utc'] = second_slot['start_time_utc']
-            intersection_time['end_time_utc'] = second_slot['end_time_utc']
+            intersection_time['start_time_utc'] = interval_two.start_time_utc
+            intersection_time['end_time_utc'] = interval_two.end_time_utc
 
         # When start and end time of first slot lies inside of the second slot
         if 'start_time' not in intersecting_points and not 'end_time' in intersecting_points:
-            if (second_slot['start_time_utc'] <= first_slot['start_time_utc']) and (second_slot['end_time_utc'] >= first_slot['end_time_utc']):
+            if (interval_two.start_time_utc <= interval_one.start_time_utc) and (interval_two.end_time_utc >= interval_one.end_time_utc):
                 # print("first slot lies in the second slot")
-                intersection_time['start_time_utc'] = first_slot['start_time_utc']
-                intersection_time['end_time_utc'] = first_slot['end_time_utc']
+                intersection_time['start_time_utc'] = interval_one.start_time_utc
+                intersection_time['end_time_utc'] = interval_one.end_time_utc
         
+        return {
+            'intersection_points': intersecting_points,
+            'intersection': intersection_time
+        }
 
-        if len(intersecting_points) == 0:
+    def print_single_day_availability(self, points, intersection, interval_one, interval_two):
+
+        if len(points) == 0:
             pass
-
         
-        if intersection_time:
-            # print(intersecting_points)
-            # print(intersection_time)
+        if intersection:
 
-            print(intersection_time['start_time_utc'].strftime(time_formate), '-', intersection_time['end_time_utc'].strftime(time_formate), ' UTC')
+            date_formate = '%Y-%m-%d %I:%M:%S %p %Z'
+            time_formate = '%I:%M:%S %p %Z%z'
 
-            print(intersection_time['start_time_utc'].astimezone(india_tz).strftime(time_formate), '-', intersection_time['end_time_utc'].astimezone(india_tz).strftime(time_formate), ' Indian Time')
+            print(intersection['start_time_utc'].strftime(time_formate), '-', intersection['end_time_utc'].strftime(time_formate))
+
+            print(intersection['start_time_utc'].astimezone(interval_one.tz).strftime(time_formate), '-', intersection['end_time_utc'].astimezone(interval_one.tz).strftime(time_formate))
             
-            print(intersection_time['start_time_utc'].astimezone(canada_tz).strftime(time_formate), '-', intersection_time['end_time_utc'].astimezone(canada_tz).strftime(time_formate), 'Canada Time')
-        
+            print(intersection['start_time_utc'].astimezone(interval_two.tz).strftime(time_formate), '-', intersection['end_time_utc'].astimezone(interval_two.tz).strftime(time_formate))
 
 
     def has_intersection(self, first_slot, second_slot):
@@ -134,9 +91,40 @@ class TimeIntersection:
 
 
 time_intersection = TimeIntersection()
-time_intersection.intersection()
+# time_interval_one = TimeInterval('10:30 AM', '7:00 PM', 'Asia/Kolkata')
+# time_interval_two = TimeInterval('7:30 PM', '7:00 PM', 'Australia/NSW')
+# meta = time_intersection.get_time_intersection(time_interval_one, time_interval_two)
+# time_intersection.print_single_day_availability(meta['intersection_points'], meta['intersection'], time_interval_one, time_interval_two)
+
+week_intervals_one = [
+    TimeInterval('6:30 AM', '3:00 PM', 'Asia/Kolkata'),
+    TimeInterval('7:30 AM', '5:00 PM', 'Asia/Kolkata'),
+    TimeInterval('2:30 PM', '7:00 PM', 'Asia/Kolkata'),
+    TimeInterval('9:30 AM', '8:00 PM', 'Asia/Kolkata'),
+    TimeInterval('11:30 AM', '7:00 PM', 'Asia/Kolkata'),
+    TimeInterval('10:30 AM', '9:00 PM', 'Asia/Kolkata'),
+    TimeInterval('10:45 AM', '6:45 PM', 'Asia/Kolkata'),
+]
+
+week_intervals_two = [
+    TimeInterval('10:30 AM', '7:00 PM', 'Australia/NSW'),
+    TimeInterval('10:30 AM', '7:00 PM', 'Australia/NSW'),
+    TimeInterval('10:30 AM', '7:00 PM', 'Australia/NSW'),
+    TimeInterval('10:30 AM', '7:00 PM', 'Australia/NSW'),
+    TimeInterval('10:30 AM', '7:00 PM', 'Australia/NSW'),
+    TimeInterval('10:30 AM', '7:00 PM', 'Australia/NSW'),
+    TimeInterval('10:30 AM', '7:00 PM', 'Australia/NSW'),
+]
 
 
+for i in range(1, 7):
+    time_interval_one = week_intervals_one[i]
+    time_interval_two = week_intervals_two[i]
+    meta = time_intersection.get_time_intersection(time_interval_one, time_interval_two)
+    time_intersection.print_single_day_availability(meta['intersection_points'], meta['intersection'], time_interval_one, time_interval_two)
 
+class WeekIntersection:
+
+    pass
 
 
