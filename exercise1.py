@@ -35,16 +35,16 @@ def print_prime_numbers(number):
 
 
 start_time = util.get_start_time()
-print_prime_numbers(100)
+print_prime_numbers(75) # when N is 75
 util.print_end_time(start_time)
 
-start_time = util.get_start_time()
-print_prime_numbers(500)
-util.print_end_time(start_time)
+# start_time = util.get_start_time()
+# print_prime_numbers(500)
+# util.print_end_time(start_time)
 
-start_time = util.get_start_time()
-print_prime_numbers(1000)
-util.print_end_time(start_time)
+# start_time = util.get_start_time()
+# print_prime_numbers(1000)
+# util.print_end_time(start_time)
 
 '''
     100 - 0.367 milliseconds

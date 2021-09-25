@@ -24,7 +24,7 @@ class TimeInterval:
         if not tz:
             time = self.tz.localize(time)
         else:
-            time = tz.localize(time)
+            time = time.astimezone(tz)
         return time
 
 
@@ -35,7 +35,7 @@ class TimeIntersection:
         intersecting_points = []
         intersection_time = {}
 
-        if (interval_one.start_time_utc >= interval_one.start_time_utc) and (interval_two.start_time_utc <= interval_one.end_time_utc):
+        if (interval_two.start_time_utc >= interval_one.start_time_utc) and (interval_two.start_time_utc <= interval_one.end_time_utc):
             intersecting_points.append('start_time')
         if (interval_two.end_time_utc >= interval_one.start_time_utc) and (interval_two.end_time_utc <= interval_one.end_time_utc):
             intersecting_points.append('end_time')
@@ -69,14 +69,14 @@ class TimeIntersection:
 
     def print_single_day_availability(self, points, intersection, interval_one, interval_two):
 
+        time_formate = '%I:%M:%S %p %Z%z'
+
         if len(points) == 0:
-            pass
+            print("No intersecting time available between Person 1 and Person2")
+            print(interval_one.start_time_utc.strftime(time_formate), '-', interval_one.end_time_utc.strftime(time_formate))
+            print(interval_two.start_time_utc.strftime(time_formate), '-', interval_two.end_time_utc.strftime(time_formate))
 
         if intersection:
-
-            date_formate = '%Y-%m-%d %I:%M:%S %p %Z'
-            time_formate = '%I:%M:%S %p %Z%z'
-
             print(intersection['start_time_utc'].strftime(
                 time_formate), '-', intersection['end_time_utc'].strftime(time_formate))
 
@@ -95,8 +95,10 @@ class TimeIntersection:
             return False
 
 time_intersection = TimeIntersection()
-time_interval_one = TimeInterval('10:30 AM', '7:00 PM', 'Asia/Kolkata')
-time_interval_two = TimeInterval('7:30 PM', '7:00 PM', 'Australia/NSW')
+
+time_interval_one = TimeInterval('06:30 AM', '3:30 PM', 'US/Pacific')
+time_interval_two = TimeInterval('8:30 AM', '4:30 PM', 'Europe/London')
+
 meta = time_intersection.get_time_intersection(time_interval_one, time_interval_two)
 time_intersection.print_single_day_availability(meta['intersection_points'], meta['intersection'], time_interval_one, time_interval_two)
 
@@ -164,4 +166,4 @@ week_intervals_two = [
     TimeInterval('10:30 AM', '11:00 AM', 'Poland'),
 ]
 
-WeekIntersection().print_week_availability(week_intervals_one, week_intervals_two)
+# WeekIntersection().print_week_availability(week_intervals_one, week_intervals_two)
