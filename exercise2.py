@@ -15,16 +15,16 @@ class TimeInterval:
         self.tz = pytz.timezone(tz)
         self.start_time = self.__make_time(start_time)
         self.end_time = self.__make_time(end_time)
-        self.start_time_utc = self.__make_time(start_time, pytz.utc)
-        self.end_time_utc = self.__make_time(end_time, pytz.utc)
+        self.start_time_utc = self.convert_to_timezone(
+            self.start_time, pytz.utc)
+        self.end_time_utc = self.convert_to_timezone(self.end_time, pytz.utc)
 
-    def __make_time(self, time, tz=None):
-        time = datetime.strptime(
-            f"{datetime.now().strftime('%Y-%m-%d')} {time}", '%Y-%m-%d %I:%M %p')
-        if not tz:
-            time = self.tz.localize(time)
-        else:
-            time = time.astimezone(tz)
+    def convert_to_timezone(self, time, tz):
+        return time.astimezone(tz)
+
+    def __make_time(self, time):
+        time = datetime.strptime(f"{time}", '%Y-%m-%d %I:%M %p')
+        time = self.tz.localize(time)
         return time
 
 
@@ -69,12 +69,14 @@ class TimeIntersection:
 
     def print_single_day_availability(self, points, intersection, interval_one, interval_two):
 
-        time_formate = '%I:%M:%S %p %Z%z'
+        time_formate = '%Y-%m-%d %I:%M:%S %p %Z%z'
 
         if len(points) == 0:
             print("No intersecting time available between Person 1 and Person2")
-            print(interval_one.start_time_utc.strftime(time_formate), '-', interval_one.end_time_utc.strftime(time_formate))
-            print(interval_two.start_time_utc.strftime(time_formate), '-', interval_two.end_time_utc.strftime(time_formate))
+            print(interval_one.start_time_utc.strftime(time_formate),
+                  '-', interval_one.end_time_utc.strftime(time_formate))
+            print(interval_two.start_time_utc.strftime(time_formate),
+                  '-', interval_two.end_time_utc.strftime(time_formate))
 
         if intersection:
             print(intersection['start_time_utc'].strftime(
@@ -93,14 +95,6 @@ class TimeIntersection:
             return True
         else:
             return False
-
-time_intersection = TimeIntersection()
-
-time_interval_one = TimeInterval('06:30 AM', '3:30 PM', 'US/Pacific')
-time_interval_two = TimeInterval('8:30 AM', '4:30 PM', 'Europe/London')
-
-meta = time_intersection.get_time_intersection(time_interval_one, time_interval_two)
-time_intersection.print_single_day_availability(meta['intersection_points'], meta['intersection'], time_interval_one, time_interval_two)
 
 
 class WeekIntersection:
@@ -146,24 +140,37 @@ class WeekIntersection:
         return f" {intersection['start_time_utc'].astimezone(interval_one.tz).strftime(time_formate)} - {intersection['end_time_utc'].astimezone(interval_one.tz).strftime(time_formate)}"
 
 
+time_intersection = TimeIntersection()
+
+time_interval_one = TimeInterval(
+    '2021-09-29 10:00 AM', '2021-09-29 07:00 PM', 'Pacific/Auckland')
+time_interval_two = TimeInterval(
+    '2021-09-29 2:00 PM', '2021-09-29 11:00 PM', 'Asia/Kolkata')
+
+meta = time_intersection.get_time_intersection(
+    time_interval_one, time_interval_two)
+time_intersection.print_single_day_availability(
+    meta['intersection_points'], meta['intersection'], time_interval_one, time_interval_two)
+
+
 week_intervals_one = [
-    TimeInterval('6:30 AM', '3:00 PM', 'Hongkong'),
-    TimeInterval('7:30 AM', '5:00 PM', 'Hongkong'),
-    TimeInterval('2:30 PM', '7:00 PM', 'Hongkong'),
-    TimeInterval('9:30 AM', '8:00 PM', 'Hongkong'),
-    TimeInterval('11:30 AM', '7:00 PM', 'Hongkong'),
-    TimeInterval('10:30 AM', '9:00 PM', 'Hongkong'),
-    TimeInterval('10:45 AM', '6:45 PM', 'Hongkong'),
+    TimeInterval('2021-09-29 06:30 AM', '2021-09-29 03:00 PM', 'Hongkong'),
+    TimeInterval('2021-09-29 07:30 AM', '2021-09-29 05:00 PM', 'Hongkong'),
+    TimeInterval('2021-09-29 02:30 PM', '2021-09-29 07:00 PM', 'Hongkong'),
+    TimeInterval('2021-09-29 09:30 AM', '2021-09-29 08:00 PM', 'Hongkong'),
+    TimeInterval('2021-09-29 11:30 AM', '2021-09-29 07:00 PM', 'Hongkong'),
+    TimeInterval('2021-09-29 10:30 AM', '2021-09-29 09:00 PM', 'Hongkong'),
+    TimeInterval('2021-09-29 10:45 AM', '2021-09-29 06:45 PM', 'Hongkong'),
 ]
 
 week_intervals_two = [
-    TimeInterval('10:30 AM', '7:00 PM', 'Poland'),
-    TimeInterval('10:30 AM', '7:00 PM', 'Poland'),
-    TimeInterval('10:30 AM', '7:00 PM', 'Poland'),
-    TimeInterval('10:30 AM', '7:00 PM', 'Poland'),
-    TimeInterval('10:30 AM', '7:00 PM', 'Poland'),
-    TimeInterval('10:30 AM', '11:00 AM', 'Poland'),
-    TimeInterval('10:30 AM', '11:00 AM', 'Poland'),
+    TimeInterval('2021-09-29 10:30 AM', '2021-09-29 07:00 PM', 'Poland'),
+    TimeInterval('2021-09-29 10:30 AM', '2021-09-29 07:00 PM', 'Poland'),
+    TimeInterval('2021-09-29 10:30 AM', '2021-09-29 07:00 PM', 'Poland'),
+    TimeInterval('2021-09-29 10:30 AM', '2021-09-29 07:00 PM', 'Poland'),
+    TimeInterval('2021-09-29 10:30 AM', '2021-09-29 07:00 PM', 'Poland'),
+    TimeInterval('2021-09-29 10:30 AM', '2021-09-29 11:00 AM', 'Poland'),
+    TimeInterval('2021-09-29 10:30 AM', '2021-09-29 11:00 AM', 'Poland'),
 ]
 
 # WeekIntersection().print_week_availability(week_intervals_one, week_intervals_two)
